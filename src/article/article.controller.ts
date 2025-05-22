@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { IArticle } from './interface/article.interface';
 import { createArticleDto } from './dto/create-article.dto';
 import { FindOneParams } from './dto/find-one.params';
+import { UpdateArticleDto } from './dto/update-article-dto';
 
 @Controller('article')
 export class ArticleController {
@@ -24,13 +25,16 @@ export class ArticleController {
     }
 
     @Put('/:id')
-    update(@Param() params: any): string {
-        return `Update article berdasarkan id: ${params.id}`;
+    update(@Param() params: FindOneParams, @Body() updateArticleDto: UpdateArticleDto): IArticle {
+        const article = this.findOneOrFail(params.id)
+        return this.articleService.updateArticleByParams(article, updateArticleDto)
     }
 
     @Delete('/:id')
-    remove(@Param() params: any): string {
-        return `Hapus article berdasarkan id: ${params.id}`;
+    @HttpCode(HttpStatus.NO_CONTENT)
+    remove(@Param() params: FindOneParams ): void {
+        const article = this.findOneOrFail(params.id)
+        this.articleService.deleteArticleByParams(article)
     }
 
     private findOneOrFail(id: string): IArticle {
